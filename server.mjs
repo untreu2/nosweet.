@@ -2,7 +2,7 @@ import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
 import { hexToBytes } from '@noble/hashes/utils';
-import { finalizeEvent, getPublicKey } from 'nostr-tools/pure';
+import { finalizeEvent, getPublicKey } from 'nostr-tools';
 import { Relay } from 'nostr-tools/relay';
 import { nip19 } from 'nostr-tools';
 import WebSocket from 'ws';
