@@ -7,12 +7,13 @@ import { Relay } from 'nostr-tools/relay';
 import { nip19 } from 'nostr-tools';
 import WebSocket from 'ws';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
+import fs from 'fs';
+import https from 'https';
 
 useWebSocketImplementation(WebSocket);
 
 const app = express();
 app.use(express.json());
-
 app.use(cors());
 
 app.get('/', (req, res) => {
@@ -76,6 +77,11 @@ app.post('/process', async (req, res) => {
     }
 });
 
-app.listen(3000, '0.0.0.0', () => {
-    console.log('Server is running on http://16.170.218.71:3000');
+const options = {
+    key: fs.readFileSync('/home/ubuntu/private.key'),
+    cert: fs.readFileSync('/home/ubuntu/certificate.crt')
+};
+
+https.createServer(options, app).listen(3000, '0.0.0.0', () => {
+    console.log('Server is running on https://16.170.218.71:3000');
 });
