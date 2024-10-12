@@ -186,6 +186,7 @@
             const nsec = document.getElementById('nsec').value;
             const resultDiv = document.getElementById('result');
             try {
+                const response = await fetch('http://localhost:3000/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
