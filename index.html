@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Nosweet</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
             position: relative;
@@ -32,9 +33,10 @@
         }
 
         .emoji {
-            font-size: 60px;
+            font-size: 50px;
             opacity: 0.3;
             animation: float 6s infinite;
+            position: absolute;
         }
 
         @keyframes float {
@@ -51,18 +53,25 @@
             gap: 20px;
             position: relative;
             z-index: 1;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            height: 80%;
+            box-sizing: border-box;
         }
 
         h1 {
             text-align: center;
             color: #ffffff;
+            font-size: 24px;
+            margin: 0;
+            padding-bottom: 20px;
         }
 
         form {
             width: 100%;
-            max-width: 500px;
             background-color: rgba(28, 28, 28, 0.8);
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             text-align: center;
@@ -90,6 +99,7 @@
             background-color: #333333;
             color: #ffffff;
             box-sizing: border-box;
+            font-size: 16px;
         }
 
         button {
@@ -150,7 +160,6 @@
     </style>
 </head>
 <body>
-
     <div class="emoji-background">
         <span class="emoji">🔨</span>
         <span class="emoji">⚙️</span>
@@ -159,43 +168,33 @@
         <span class="emoji">⚙️</span>
         <span class="emoji">🦩</span>
     </div>
-
     <div class="container">
         <form id="tweetForm">
             <h1>Share a tweet on Nostr</h1>
-
             <label for="tweetUrl">Tweet URL:</label>
             <input type="text" id="tweetUrl" name="tweetUrl" required placeholder="https://twitter.com/user/status/1234567890">
-
             <label for="nsec">Nsec Private Key:</label>
             <input type="text" id="nsec" name="nsec" required placeholder="nsec1...">
-
             <button type="submit">Submit</button>
             <div class="result" id="result"></div>
         </form>
-
         <div class="external-buttons">
             <a href="https://github.com/untreu2/nosweet" class="github-button" target="_blank">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub Logo" class="github-icon" style="filter: brightness(0) invert(1);">
                 Source Code
             </a>
-
             <button type="button" class="donate-button" onclick="copyLightningAddress()">
                 ⚡ Donate with Lightning
             </button>
             <div class="result" id="donateResult"></div>
         </div>
     </div>
-
-
     <script>
         document.getElementById('tweetForm').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             const tweetUrl = document.getElementById('tweetUrl').value;
             const nsec = document.getElementById('nsec').value;
             const resultDiv = document.getElementById('result');
-
             try {
                 const response = await fetch('http://16.170.218.71:3000/process', {
                     method: 'POST',
@@ -204,9 +203,7 @@
                     },
                     body: JSON.stringify({ tweetUrl, nsec }),
                 });
-
                 const result = await response.json();
-
                 if (response.ok) {
                     resultDiv.innerHTML = '<p style="color: green;">Event published successfully!</p>';
                     console.log(result);
@@ -230,7 +227,6 @@
         }
 
         const emojiBackground = document.querySelector('.emoji-background');
-
         for (let i = 0; i < 150; i++) {
             const emojiClone = document.createElement('span');
             emojiClone.className = 'emoji';
@@ -242,9 +238,9 @@
             } else {
                 emojiClone.innerHTML = '🦩';
             }
-            emojiClone.style.position = 'absolute';
-            emojiClone.style.left = Math.random() * 100 + 'vw';
-            emojiClone.style.top = Math.random() * 100 + 'vh';
+            emojiClone.style.left = Math.random() * 100 + '%';
+            emojiClone.style.top = Math.random() * 100 + '%';
+            emojiClone.style.animationDelay = Math.random() * 5 + 's';
             emojiBackground.appendChild(emojiClone);
         }
     </script>
