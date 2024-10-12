@@ -223,6 +223,9 @@
             emojiClone.style.animationDelay = Math.random() * 5 + 's';
             emojiBackground.appendChild(emojiClone);
         }
+        document.addEventListener('touchmove', function (event) {
+            event.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
