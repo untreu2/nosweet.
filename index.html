@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosweet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #9b59b6;
+        }
+
+        form {
+            margin: 0 auto;
+            max-width: 500px;
+            background-color: #1c1c1c;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: bold;
+            color: #9b59b6;
+            text-align: left;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+            border: 1px solid #9b59b6;
+            background-color: #333333;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #8e44ad;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #732d91;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <form id="tweetForm">
+        <h1>Share a tweet on Nostr</h1>
+
+        <label for="tweetUrl">Tweet URL:</label>
+        <input type="text" id="tweetUrl" name="tweetUrl" required placeholder="https://twitter.com/user/status/1234567890">
+
+        <label for="nsec">Nsec Private Key:</label>
+        <input type="text" id="nsec" name="nsec" required placeholder="nsec1...">
+
+        <button type="submit">Submit</button>
+        <div class="result" id="result"></div>
+    </form>
+
+    <script>
+        document.getElementById('tweetForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const tweetUrl = document.getElementById('tweetUrl').value;
+            const nsec = document.getElementById('nsec').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                const response = await fetch('http://16.170.218.71:3000/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ tweetUrl, nsec }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = '<p style="color: green;">Event published successfully!</p>';
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">An error occurred: ${result.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p style="color: red;">An error occurred.</p>';
+            }
+        });
+    </script>
+
+</body>
+</html>
