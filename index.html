@@ -134,7 +134,7 @@
             width: 100%;
         }
 
-        .github-button, .donate-button {
+        .github-button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -146,16 +146,11 @@
             transition: background 0.3s;
             width: 100%;
             max-width: 300px;
+            text-align: center;
         }
 
-        .github-button:hover, .donate-button:hover {
+        .github-button:hover {
             background-color: #444;
-        }
-
-        .github-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 8px;
         }
     </style>
 </head>
@@ -180,13 +175,8 @@
         </form>
         <div class="external-buttons">
             <a href="https://github.com/untreu2/nosweet" class="github-button" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub Logo" class="github-icon" style="filter: brightness(0) invert(1);">
-                Source Code
+                Source code on GitHub
             </a>
-            <button type="button" class="donate-button" onclick="copyLightningAddress()">
-                ⚡ Donate with Lightning
-            </button>
-            <div class="result" id="donateResult"></div>
         </div>
     </div>
     <script>
@@ -215,16 +205,6 @@
                 console.error('Error:', error);
             }
         });
-
-        function copyLightningAddress() {
-            const lightningAddress = 'untreu@walletofsatoshi.com';
-            navigator.clipboard.writeText(lightningAddress).then(() => {
-                document.getElementById('donateResult').innerHTML = '<p style="color: green;">Lightning address copied!</p>';
-            }).catch(err => {
-                document.getElementById('donateResult').innerHTML = '<p style="color: red;">Failed to copy address.</p>';
-                console.error('Error:', err);
-            });
-        }
 
         const emojiBackground = document.querySelector('.emoji-background');
         for (let i = 0; i < 150; i++) {
