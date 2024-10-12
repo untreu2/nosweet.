@@ -102,11 +102,16 @@
             font-size: 16px;
         }
 
-        button {
+        .submit-container {
+            position: relative;
             width: 100%;
             max-width: 300px;
+        }
+
+        button {
+            width: 100%;
             padding: 14px;
-            background: linear-gradient(to right, #8e44ad, #732d91);
+            background-color: #555;
             color: white;
             font-size: 18px;
             border: none;
@@ -114,10 +119,24 @@
             cursor: pointer;
             transition: background 0.3s;
             margin-top: 10px;
+            position: relative;
+            overflow: hidden;
         }
 
-        button:hover {
-            background: linear-gradient(to right, #732d91, #8e44ad);
+        .progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #8e44ad;
+            width: 0;
+            transition: width 2s;
+            z-index: 1;
+        }
+
+        .button-text {
+            position: relative;
+            z-index: 2;
         }
 
         .result {
@@ -170,7 +189,12 @@
             <input type="text" id="tweetUrl" name="tweetUrl" required placeholder="https://twitter.com/user/status/1234567890">
             <label for="nsec">Nsec Private Key:</label>
             <input type="text" id="nsec" name="nsec" required placeholder="nsec1...">
-            <button type="submit">Submit</button>
+            <div class="submit-container">
+                <button type="submit" id="submitButton">
+                    <span class="button-text">Submit</span>
+                    <div class="progress" id="progress"></div>
+                </button>
+            </div>
             <div class="result" id="result"></div>
         </form>
         <div class="external-buttons">
@@ -185,6 +209,14 @@
             const tweetUrl = document.getElementById('tweetUrl').value;
             const nsec = document.getElementById('nsec').value;
             const resultDiv = document.getElementById('result');
+            const progress = document.getElementById('progress');
+            const buttonText = document.querySelector('.button-text');
+            progress.style.width = '0';
+            resultDiv.innerHTML = '<p style="color: yellow;">Scraping...</p>';
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            resultDiv.innerHTML += '<p style="color: yellow;">Broadcasting...</p>';
+            progress.style.width = '100%';
+            buttonText.textContent = 'Submitted';
             try {
                 const response = await fetch('https://gutolcam.com:3000/process', {
                     method: 'POST',
@@ -195,14 +227,16 @@
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    resultDiv.innerHTML = '<p style="color: green;">Event published successfully!</p>';
-                    console.log(result);
+                    resultDiv.innerHTML += '<p style="color: green;">Event published successfully!</p>';
                 } else {
-                    resultDiv.innerHTML = `<p style="color: red;">An error occurred: ${result.message}</p>`;
+                    resultDiv.innerHTML += `<p style="color: red;">An error occurred: ${result.message}</p>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = '<p style="color: red;">An error occurred.</p>';
+                resultDiv.innerHTML += '<p style="color: red;">An error occurred.</p>';
                 console.error('Error:', error);
+            } finally {
+                progress.style.width = '0'; 
+                buttonText.textContent = 'Submit'; 
             }
         });
 
@@ -213,7 +247,7 @@
             const randomEmoji = Math.random();
             if (randomEmoji < 0.33) {
                 emojiClone.innerHTML = '🔨';
-            } else if (randomEmoji < 0.30) {
+            } else if (randomEmoji < 0.66) {
                 emojiClone.innerHTML = '⚙️';
             } else {
                 emojiClone.innerHTML = '🦩';
