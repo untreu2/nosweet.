@@ -78,10 +78,10 @@ app.post('/process', async (req, res) => {
 });
 
 const options = {
-    key: fs.readFileSync('/home/ubuntu/private.key'),
-    cert: fs.readFileSync('/home/ubuntu/certificate.crt')
+    key: fs.readFileSync('/etc/letsencrypt/live/gutolcam.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/gutolcam.com/fullchain.pem')
 };
 
-https.createServer(options, app).listen(3000, '16.16.52.46', () => {
-    console.log('Server is running on https://16.16.52.46:3000');
+https.createServer(options, app).listen(3000, '0.0.0.0', () => {
+    console.log('Server is running on https://gutolcam.com:3000');
 });
