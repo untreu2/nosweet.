@@ -82,6 +82,6 @@ const options = {
     cert: fs.readFileSync('/home/ubuntu/certificate.crt')
 };
 
-https.createServer(options, app).listen(3000, '0.0.0.0', () => {
-    console.log('Server is running on https://16.170.218.71:3000');
+https.createServer(options, app).listen(3000, '16.16.52.46', () => {
+    console.log('Server is running on https://16.16.52.46:3000');
 });
