@@ -214,13 +214,11 @@
             progress.style.width = '0';
             resultDiv.innerHTML = '<p style="color: yellow;">Scraping...</p>';
             await new Promise(resolve => setTimeout(resolve, 2000));
-            resultDiv.innerHTML += '<p style="color: yellow;">Signing...</p>';
-            await new Promise(resolve => setTimeout(resolve, 2000));
             resultDiv.innerHTML += '<p style="color: yellow;">Broadcasting...</p>';
             progress.style.width = '100%';
             buttonText.textContent = 'Submitted';
             try {
-                const response = await fetch('https://gutolcam.com:3000/scrape-tweet', {
+                const response = await fetch('https://gutolcam.com:3000/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

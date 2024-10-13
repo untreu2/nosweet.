@@ -1,19 +1,26 @@
 import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
+import { hexToBytes } from '@noble/hashes/utils';
+import { finalizeEvent, getPublicKey } from 'nostr-tools/pure';
 import { Relay } from 'nostr-tools/relay';
+import { nip19 } from 'nostr-tools';
+import WebSocket from 'ws';
+import { useWebSocketImplementation } from 'nostr-tools/relay';
 import fs from 'fs';
 import https from 'https';
 
+useWebSocketImplementation(WebSocket);
+
 const app = express();
-const PORT = 3000;
-
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-const RELAY_URL = 'wss://untreu.me';
+app.get('/', (req, res) => {
+    res.send('Server is running and received a GET request!');
+});
 
-app.post('/scrape-tweet', async (req, res) => {
+app.post('/process', async (req, res) => {
     const { tweetUrl, nsec } = req.body;
 
     try {
@@ -41,26 +48,33 @@ app.post('/scrape-tweet', async (req, res) => {
         });
 
         await browser.close();
-        res.json({ tweetContent });
+
+        const { type, data: secretKey } = nip19.decode(nsec);
+        if (type !== 'nsec') {
+            return res.status(400).json({ message: 'Invalid nsec format!' });
+        }
+        const sk = secretKey;
+        const pk = getPublicKey(sk);
+
+        const eventTemplate = {
+            kind: 1,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [],
+            content: tweetContent
+        };
+
+        const signedEvent = finalizeEvent(eventTemplate, sk);
+
+        const relayUrl = 'wss://nos.lol';
+        const relay = await Relay.connect(relayUrl);
+
+        await relay.publish(signedEvent);
+        relay.close();
+
+        res.json({ message: 'Event published successfully!', signedEvent });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ message: 'An error occurred', error: error.message });
-    }
-});
-
-app.post('/publish-note', async (req, res) => {
-    const { signedEvent } = req.body;
-
-    try {
-        const relay = new Relay("wss://nos.lol");
-        await relay.connect();
-
-        await relay.send(signedEvent);
-
-        res.json({ message: 'Note published' });
-    } catch (error) {
-        console.error('Relay send error:', error);
-        res.status(500).json({ message: 'Note could not be published' });
+        res.status(500).json({ message: 'An error occurred', error });
     }
 });
 
@@ -69,6 +83,6 @@ const options = {
     cert: fs.readFileSync('/etc/letsencrypt/live/gutolcam.com/fullchain.pem')
 };
 
-https.createServer(options, app).listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on https://gutolcam.com:${PORT}`);
+https.createServer(options, app).listen(3000, '0.0.0.0', () => {
+    console.log('Server is running on https://gutolcam.com:3000');
 });
