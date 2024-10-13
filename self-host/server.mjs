@@ -1,81 +1,64 @@
 import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
-import { hexToBytes } from '@noble/hashes/utils';
-import { finalizeEvent, getPublicKey } from 'nostr-tools/pure';
 import { Relay } from 'nostr-tools/relay';
-import { nip19 } from 'nostr-tools';
-import WebSocket from 'ws';
-import { useWebSocketImplementation } from 'nostr-tools/relay';
 
-useWebSocketImplementation(WebSocket);
 
 const app = express();
-app.use(express.json());
+const PORT = 3000;
 
 app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Server is running and received a GET request!');
-});
+const RELAY_URL = 'wss://untreu.me';
 
-app.post('/process', async (req, res) => {
-    const { tweetUrl, nsec } = req.body;
+app.post('/scrape-tweet', async (req, res) => {
+    const { tweetUrl } = req.body;
 
     try {
         const browser = await puppeteer.launch({
             headless: true,
+            executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
-
-        const page = await browser.newPage();
         
+        const page = await browser.newPage();
         await page.setUserAgent(
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36'
         );
-        
-        await page.goto(tweetUrl, {
-            waitUntil: 'networkidle0',
-        });
+
+        await page.goto(tweetUrl, { waitUntil: 'networkidle2' });
 
         await page.waitForSelector('div[data-testid="tweetText"] span', { timeout: 15000 });
-
         const tweetContent = await page.evaluate(() => {
             const tweetTextElement = document.querySelector('div[data-testid="tweetText"] span');
             return tweetTextElement ? tweetTextElement.innerText : 'Tweet content not found.';
         });
 
         await browser.close();
-
-        const { type, data: secretKey } = nip19.decode(nsec);
-        if (type !== 'nsec') {
-            return res.status(400).json({ message: 'Invalid nsec format!' });
-        }
-        const sk = secretKey;
-        const pk = getPublicKey(sk);
-
-        const eventTemplate = {
-            kind: 1,
-            created_at: Math.floor(Date.now() / 1000),
-            tags: [],
-            content: tweetContent
-        };
-
-        const signedEvent = finalizeEvent(eventTemplate, sk);
-
-        const relayUrl = 'wss://nos.lol';
-        const relay = await Relay.connect(relayUrl);
-
-        await relay.publish(signedEvent);
-        relay.close();
-
-        res.json({ message: 'Event published successfully!', signedEvent });
+        res.json({ tweetContent });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ message: 'An error occurred', error });
+        res.status(500).json({ message: 'An error occurred', error: error.message });
     }
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+app.post('/publish-note', async (req, res) => {
+    const { signedEvent } = req.body;
+
+    try {
+        const relay = new Relay("wss://nos.lol");
+        await relay.connect();
+
+        await relay.send(signedEvent);
+
+        res.json({ message: 'Note published' });
+    } catch (error) {
+        console.error('Relay send error:', error);
+        res.status(500).json({ message: 'Note could not be published' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is working on http://localhost:${PORT}`);
 });
