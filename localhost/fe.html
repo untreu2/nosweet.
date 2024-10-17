@@ -266,6 +266,10 @@
                         combinedContent += `\n${mediaUrl}`;
                     }
 
+                    if (combinedContent.endsWith('No media found')) {
+                        combinedContent = combinedContent.replace('No media found', '').trim();
+                    }
+
                     const eventTemplate = {
                         kind: 1,
                         pubkey: pk,
