@@ -250,7 +250,7 @@
                 const { type, data: sk } = nip19.decode(nsec);
                 if (type !== 'nsec') throw new Error('Invalid nsec key format');
                 const pk = getPublicKey(sk);
-                const response = await fetch('https://gutolcam.com:3000/scrape-tweet', {  
+                const response = await fetch('http://localhost:3000/scrape-tweet', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tweetUrl })
