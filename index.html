@@ -163,6 +163,16 @@
         import { Relay, useWebSocketImplementation } from 'https://cdn.jsdelivr.net/npm/nostr-tools/relay/+esm';
         useWebSocketImplementation(WebSocket);
 
+        const relays = [
+            'wss://strfry.iris.to',
+            'wss://relay.damus.io',
+            'wss://relay.nostr.band',
+            'wss://relay.snort.social',
+            'wss://vitor.nostr1.com',
+            'wss://nos.lol',
+            'wss://untreu.me'
+        ];
+
         async function encryptNsec(nsec, password) {
             const enc = new TextEncoder();
             const encodedNsec = enc.encode(nsec);
@@ -191,6 +201,23 @@
             } catch (e) {
                 throw new Error('Decryption failed');
             }
+        }
+
+        async function publishToRelays(signedEvent) {
+            const successfulRelays = [];
+            for (const relayUrl of relays) {
+                try {
+                    const relay = await Relay.connect(relayUrl);
+                    await relay.publish(signedEvent);
+                    successfulRelays.push(relayUrl);
+                } catch (error) {
+                    console.error(`Error publishing to relay ${relayUrl}:`, error);
+                }
+            }
+            if (successfulRelays.length === 0) {
+                throw new Error('Failed to publish to any relay');
+            }
+            return successfulRelays;
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -258,12 +285,9 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    const tweetContent = result.content;
-                    const mediaUrl = result.mediaUrl;
-
-                    let combinedContent = tweetContent;
-                    if (mediaUrl) {
-                        combinedContent += `\n${mediaUrl}`;
+                    let combinedContent = result.content;
+                    if (result.mediaUrl) {
+                        combinedContent += `\n${result.mediaUrl}`;
                     }
 
                     if (combinedContent.endsWith('No media found')) {
@@ -279,9 +303,11 @@
                     };
 
                     const signedEvent = finalizeEvent(eventTemplate, sk);
-                    const relay = await Relay.connect('wss://nos.lol');
-                    await relay.publish(signedEvent);
+                    const successfulRelays = await publishToRelays(signedEvent);
                     document.getElementById('result').textContent = 'Note published successfully!';
+                    const relayList = document.createElement('p');
+                    relayList.textContent = `Published to: ${successfulRelays.join(', ')}`;
+                    document.getElementById('result').appendChild(relayList);
                 } else {
                     document.getElementById('result').textContent = `Error: ${result.error}`;
                 }
